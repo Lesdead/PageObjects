@@ -21,6 +21,19 @@ public class MoneyTransferTest {
     void setup() {
         open("http://localhost:9999");
     }
+    void refresh() {
+        DashboardPage dashBoard = new DashboardPage();
+        int diff = dashBoard.getCardBalance(1) - 10000;
+        if (diff != 0) {
+            if (diff < 0) {
+                String numberCardTwo = DataHelper.getCard(2).getCardNumber();
+                dashBoard.increaseBalance(1).refillCard(Integer.toString(Math.abs(diff)), numberCardTwo);
+            } else {
+                String numberCardOne = DataHelper.getCard(1).getCardNumber();
+                dashBoard.increaseBalance(2).refillCard(Integer.toString(Math.abs(diff)), numberCardOne);
+            }
+        }
+    }
 
     @Test
     void shouldAuthIfUserExist() {
@@ -39,6 +52,7 @@ public class MoneyTransferTest {
     void shouldTransferMoneyBetweenOwnCardsFromSecondToFirst() {
         var loginPage = new LoginPage();
         var verificationPage = loginPage.validLogin(authInfo);
+
         verificationPage.validVerify(verificationCode);
         DashboardPage dashBoard = new DashboardPage();
         int amount = 5000;
@@ -50,6 +64,7 @@ public class MoneyTransferTest {
         int balanceActualTwo = dashBoard.getCardBalance(2);
         assertEquals((primaryBalanceOne + amount), balanceActualOne);
         assertEquals((primaryBalanceTwo - amount), balanceActualTwo);
+        refresh();
     }
 
     @Test
@@ -67,6 +82,7 @@ public class MoneyTransferTest {
         int balanceActualTwo = dashBoard.getCardBalance(2);
         assertEquals((primaryBalanceOne - amount), balanceActualOne);
         assertEquals((primaryBalanceTwo + amount), balanceActualTwo);
+        refresh();
     }
 
     @Test
@@ -90,5 +106,6 @@ public class MoneyTransferTest {
         var refillPage = dashBoard.increaseBalance(1);
         refillPage.wrongRefillCard(Integer.toString(amount), getCard(2).getCardNumber());
         refillPage.checkErrorBalance();
+        refresh();
     }
 }
